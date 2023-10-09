@@ -28,7 +28,7 @@ function Delete-PathFile($projectName) {
 }
 
 # Read the configuration from the JSON file
-$configPath = "C:\Users\Ehrling\Documents\WindowsPowerShell\Scripts\CD-Script\config.json"
+$configPath = ""
 if (Test-Path -Path $configPath -PathType Leaf) {
     $config = Get-Content -Path $configPath | ConvertFrom-Json
     $ProjectsDir = $config.ProjectsDir
