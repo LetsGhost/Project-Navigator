@@ -5,7 +5,7 @@ param(
 # Set the path to the directory where your project paths are stored
 $ProjectsDir = "C:\Users\Ehrling\Documents\WindowsPowerShell\Scripts\CD-Script\projects"
 
-# Function to display text in red color
+# Functions 
 function Write-ColorText($text, $color) {
     Write-Host $text -ForegroundColor $color
 }
@@ -25,6 +25,16 @@ function Delete-PathFile($projectName) {
     } else {
         Write-ColorText "Path file for '$projectName' not found." "Red"
     }
+}
+
+# Read the configuration from the JSON file
+$configPath = "C:\Users\Ehrling\Documents\WindowsPowerShell\Scripts\CD-Script\config.json"
+if (Test-Path -Path $configPath -PathType Leaf) {
+    $config = Get-Content -Path $configPath | ConvertFrom-Json
+    $ProjectsDir = $config.ProjectsDir
+} else {
+    Write-ColorText "Configuration file not found." "Red"
+    exit 1
 }
 
 # Check if the -help flag is used
