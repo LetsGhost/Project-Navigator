@@ -3,7 +3,13 @@ param(
 )
 
 # Set the path to the directory where your project paths are stored
-$ProjectsDir = "C:\Users\Ehrling\Documents\WindowsPowerShell\Scripts\CD-Script\projects"
+$ProjectsDir = Join-Path $PWD "projects"
+
+if (-not (Test-Path $ProjectsDir)) {
+    Write-ColorText "Projects folder not found." "Red"
+    Write-ColorText "Please run rr --setup to create the folder." "Red"
+    exit 0
+}
 
 # Functions 
 function Write-ColorText($text, $color) {
@@ -27,33 +33,24 @@ function Delete-PathFile($projectName) {
     }
 }
 
-# Read the configuration from the JSON file
-$configPath = ""
-if (Test-Path -Path $configPath -PathType Leaf) {
-    $config = Get-Content -Path $configPath | ConvertFrom-Json
-    $ProjectsDir = $config.ProjectsDir
-} else {
-    Write-ColorText "Configuration file not found." "Red"
-    exit 1
-}
+# Check for all flags
 
 # Check if the -help flag is used
 if ($ProjectName -eq "--help") {
     # List all available projects
     $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
     
-    Write-ColorText "Usage: cdscript [project name]" "DarkGray"
+    Write-ColorText "Usage: rr [project name] --[flag]" "DarkGray"
     Write-Host "Options:"
-    Write-ColorText "  --help   Display this help message" "DarkGray"
-    Write-ColorText "  --open   Open the 'projects' directory in File Explorer" "DarkGray"
-    Write-ColorText "  --paths  Display available projects" "DarkGray"
-    Write-ColorText "  --create      Create a new path file for a project" "DarkGray"
-    Write-ColorText "  --delete      Delete a path file for a project" "DarkGray"
+    Write-ColorText "  --help       Display this help message" "DarkGray"
+    Write-ColorText "  --open       Open the 'projects' directory in File Explorer" "DarkGray"
+    Write-ColorText "  --paths      Display available projects" "DarkGray"
+    Write-ColorText "  --create     Create a new path file for a project" "DarkGray"
+    Write-ColorText "  --delete     Delete a path file for a project" "DarkGray"
+    Write-ColorText "  --setup      To create the 'projects' directory" "DarkGray"
 
     exit 0
 }
-
-# All the checks for the flags
 
 # Check if the -open flag is used
 if ($ProjectName -eq "--open") {
@@ -97,6 +94,15 @@ if ($ProjectName -eq "--delete") {
     $ProjectName = $args[0]
 
     Delete-PathFile $ProjectName
+    exit 0
+}
+
+# Check if the --setup flag is used
+if($ProjectName -eq "--setup") {
+    if (-not (Test-Path $ProjectsDir)) {
+        New-Item -ItemType Directory -Path $ProjectsDir | Out-Null
+        Write-Host "Created projects folder at '$ProjectsDir'." -ForegroundColor Green
+    }
     exit 0
 }
 
