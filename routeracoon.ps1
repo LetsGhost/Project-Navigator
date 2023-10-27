@@ -3,33 +3,42 @@ param(
 )
 
 # Set the path to the directory where your project paths are stored
-$ProjectsDir = Join-Path $PWD "projects"
-
-if (-not (Test-Path $ProjectsDir)) {
-    Write-ColorText "Projects folder not found." "Red"
-    Write-ColorText "Please run rr --setup to create the folder." "Red"
-    exit 0
-}
+$ProjectsDir = Join-Path $env:USERPROFILE "Documents\projects"
 
 # Functions 
+
+# Writes the given string with a prefered color
 function Write-ColorText($text, $color) {
     Write-Host $text -ForegroundColor $color
 }
 
+# Creates the project file for navigation
 function Create-PathFile($projectName, $projectPath) {
     $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
     $projectPath | Set-Content -Path $pathFilePath
-    Write-Host "Created path file for '$projectName'." -ForegroundColor Green
+    Write-Host "Racoon washed a project file for '$projectName'." -ForegroundColor Green
 }
 
-# Function to delete a path file
+# Deletes the project file
 function Delete-PathFile($projectName) {
     $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
     if (Test-Path -Path $pathFilePath -PathType Leaf) {
         Remove-Item -Path $pathFilePath -Force
-        Write-ColorText "Deleted path file for '$projectName'." "Green"
+        Write-ColorText "Racoon ate the project file for '$projectName'." "Green"
     } else {
-        Write-ColorText "Path file for '$projectName' not found." "Red"
+        Write-ColorText "Raccon didnt found the project file for '$projectName'." "Red"
+    }
+}
+
+# Rename the project file
+function Rename-PathFile($projectName, $newProjectName) {
+    $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
+    if (Test-Path -Path $pathFilePath -PathType Leaf) {
+        $newPathFilePath = Join-Path $ProjectsDir "$newProjectName.txt"
+        Rename-Item -Path $pathFilePath -NewName $newPathFilePath -Force
+        Write-ColorText "Racoon set the name for '$projectName' to '$newProjectName'." "Green"
+    } else {
+        Write-ColorText "Raccon didnt found the project file for '$projectName'." "Red"
     }
 }
 
@@ -41,10 +50,10 @@ if ($ProjectName -eq "--help") {
     $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
     
     Write-ColorText "Usage: rr [project name] --[flag]" "DarkGray"
-    Write-Host "Options:"
+    Write-Host "The avalable options to command your RouteRaccon:"
     Write-ColorText "  --help       Display this help message" "DarkGray"
     Write-ColorText "  --open       Open the 'projects' directory in File Explorer" "DarkGray"
-    Write-ColorText "  --paths      Display available projects" "DarkGray"
+    Write-ColorText "  --list      Display available projects" "DarkGray"
     Write-ColorText "  --create     Create a new path file for a project" "DarkGray"
     Write-ColorText "  --delete     Delete a path file for a project" "DarkGray"
     Write-ColorText "  --setup      To create the 'projects' directory" "DarkGray"
@@ -59,7 +68,7 @@ if ($ProjectName -eq "--open") {
 }
 
 # Check if the -open flag is used
-if ($ProjectName -eq "--paths") {
+if ($ProjectName -eq "--list") {
     $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
 
     Write-Host "Available projects:"
@@ -73,7 +82,7 @@ if ($ProjectName -eq "--paths") {
 # Check if the --create flag is used
 if ($ProjectName -eq "--create") {
     if ($args.Count -lt 2) {
-        Write-ColorText "Usage: navi --create <project_name> <project_path>" "Red"
+        Write-ColorText "Usage: rr --create <project_name> <project_path>" "Red"
         exit 1
     }
 
@@ -87,7 +96,7 @@ if ($ProjectName -eq "--create") {
 # Check if the --delete flag is used
 if ($ProjectName -eq "--delete") {
     if ([string]::IsNullOrEmpty($args[0])) {
-        Write-ColorText "Usage: navi --delete <project_name>" "Red"
+        Write-ColorText "Usage: rr --delete <project_name>" "Red"
         exit 1
     }
 
@@ -101,23 +110,46 @@ if ($ProjectName -eq "--delete") {
 if($ProjectName -eq "--setup") {
     if (-not (Test-Path $ProjectsDir)) {
         New-Item -ItemType Directory -Path $ProjectsDir | Out-Null
-        Write-Host "Created projects folder at '$ProjectsDir'." -ForegroundColor Green
+        Write-Host "Racoon crafted the projects folder at '$ProjectsDir'." -ForegroundColor Green
     }
+    exit 0
+}
+
+# Check if the --rename flag is used
+if ($ProjectName -eq "--rename") {
+    if ([string]::IsNullOrEmpty($args[1]) -or [string]::IsNullOrEmpty($args[2])) {
+        Write-ColorText "Usage: rr --rename <project_name> <new_project_name>" "Red"
+        exit 1
+    }
+
+    $ProjectName = $args[1]
+    $NewProjectName = $args[2]
+
+    Rename-PathFile $ProjectName $NewProjectName
+    exit 0
+}
+
+# Check if the projects folder exists
+if (-not (Test-Path $ProjectsDir)) {
+    Write-ColorText "Racoon didnt found the projects folder." "Red"
+    Write-ColorText "Please run rr --setup to create the folder." "Red"
     exit 0
 }
 
 # Check if a project name was provided as an argument
 if ([string]::IsNullOrEmpty($ProjectName)) {
-    Write-ColorText "No project name provided." "Red"
+    Write-ColorText "You have to say the projects name to RouteRacoon" "Red"
     exit 1
 }
+
+# Logic to navigate
 
 # Construct the project file path
 $ProjectFilePath = Join-Path $ProjectsDir "$ProjectName.txt"
 
 # Check if the project file exists
 if (-not (Test-Path -Path $ProjectFilePath -PathType Leaf)) {
-    Write-ColorText "Project '$ProjectName' does not exist." "Red"
+    Write-ColorText "Racoon didnt found '$ProjectName' in the projects folder." "Red"
     exit 1
 }
 
@@ -125,4 +157,4 @@ if (-not (Test-Path -Path $ProjectFilePath -PathType Leaf)) {
 $ProjectPath = Get-Content -Path $ProjectFilePath
 Set-Location -Path $ProjectPath
 
-Write-ColorText "Navigated to '$ProjectName'." "Green"
+Write-ColorText "Racoon navigated you to '$ProjectName' at '$ProjectPath'." "Green"
