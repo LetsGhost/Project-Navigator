@@ -14,9 +14,19 @@ function Write-ColorText($text, $color) {
 
 # Creates the project file for navigation
 function Create-PathFile($projectName, $projectPath) {
-    $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
-    $projectPath | Set-Content -Path $pathFilePath
-    Write-Host "Racoon washed a project file for '$projectName'." -ForegroundColor Green
+    try{
+        if (-not $projectPath) {
+            $projectPath = Get-Location
+        }
+        $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
+        $projectPath | Set-Content -Path $pathFilePath
+        Write-Host "Racoon washed a project file for '$projectName'." -ForegroundColor Green
+
+        exit 1
+    } catch {
+        Write-ColorText "Racoon couldnt create the project file for '$projectName'." "Red"
+        exit 1
+    }
 }
 
 # Deletes the project file
@@ -81,15 +91,21 @@ if ($ProjectName -eq "--list") {
 
 # Check if the --create flag is used
 if ($ProjectName -eq "--create") {
-    if ($args.Count -lt 2) {
-        Write-ColorText "Usage: rr --create <project_name> <project_path>" "Red"
+    if ($args.Count -lt 1) {
+        Write-ColorText "Usage: rr --create <project_name> [<project_path>]" "Red"
         exit 1
     }
 
     $ProjectName = $args[0]
     $ProjectPath = $args[1]
 
-    Create-PathFile $ProjectName $ProjectPath
+    if (-not $ProjectPath) {
+        $ProjectPath = Get-Location
+    }
+
+    $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
+    $projectPath | Set-Content -Path $pathFilePath
+    Write-Host "Racoon washed a project file for '$projectName'." -ForegroundColor Green
     exit 0
 }
 
