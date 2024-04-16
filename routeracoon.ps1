@@ -63,10 +63,11 @@ if ($ProjectName -eq "--help") {
     Write-Host "The avalable options to command your RouteRaccon:"
     Write-ColorText "  --help       Display this help message" "DarkGray"
     Write-ColorText "  --open       Open the 'projects' directory in File Explorer" "DarkGray"
-    Write-ColorText "  --list      Display available projects" "DarkGray"
+    Write-ColorText "  --list       Display available projects" "DarkGray"
     Write-ColorText "  --create     Create a new path file for a project" "DarkGray"
     Write-ColorText "  --delete     Delete a path file for a project" "DarkGray"
     Write-ColorText "  --setup      To create the 'projects' directory" "DarkGray"
+    Write-ColorText "  --rename     Rename a path file for a project" "DarkGray"
 
     exit 0
 }
