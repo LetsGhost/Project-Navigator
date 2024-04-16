@@ -133,13 +133,14 @@ if($ProjectName -eq "--setup") {
 
 # Check if the --rename flag is used
 if ($ProjectName -eq "--rename") {
-    if ([string]::IsNullOrEmpty($args[1]) -or [string]::IsNullOrEmpty($args[2])) {
+
+    if ([string]::IsNullOrEmpty($args[0]) -or [string]::IsNullOrEmpty($args[1])) {
         Write-ColorText "Usage: rr --rename <project_name> <new_project_name>" "Red"
         exit 1
     }
 
-    $ProjectName = $args[1]
-    $NewProjectName = $args[2]
+    $ProjectName = $args[0]
+    $NewProjectName = $args[1]
 
     Rename-PathFile $ProjectName $NewProjectName
     exit 0
