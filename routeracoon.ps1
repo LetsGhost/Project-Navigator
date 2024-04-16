@@ -40,12 +40,12 @@ if ($ProjectName -eq "--open") {
 
 # Check if the --list flag is used
 if ($ProjectName -eq "--list") {
-    $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
+    $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt
 
     Write-Host "Available projects:"
 
     $ProjectsList | ForEach-Object {
-        Write-ColorText "  $_" "Yellow"
+        Write-ColorText "  $($_.BaseName) - $($_.FullName)" "Yellow"
     }
     exit 0
 }
