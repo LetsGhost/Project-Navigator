@@ -5,60 +5,20 @@ param(
 # Set the path to the directory where your project paths are stored
 $ProjectsDir = Join-Path $env:USERPROFILE "Documents\projects"
 
-# Functions 
+# Utils
+. .\utils\writeColorText.ps1
 
-# Writes the given string with a prefered color
-function Write-ColorText($text, $color) {
-    Write-Host $text -ForegroundColor $color
-}
-
-# Creates the project file for navigation
-function Create-PathFile($projectName, $projectPath) {
-    try{
-        if (-not $projectPath) {
-            $projectPath = Get-Location
-        }
-        $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
-        $projectPath | Set-Content -Path $pathFilePath
-        Write-Host "Racoon washed a project file for '$projectName'." -ForegroundColor Green
-
-        exit 1
-    } catch {
-        Write-ColorText "Racoon couldnt create the project file for '$projectName'." "Red"
-        exit 1
-    }
-}
-
-# Deletes the project file
-function Delete-PathFile($projectName) {
-    $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
-    if (Test-Path -Path $pathFilePath -PathType Leaf) {
-        Remove-Item -Path $pathFilePath -Force
-        Write-ColorText "Racoon ate the project file for '$projectName'." "Green"
-    } else {
-        Write-ColorText "Raccon didnt found the project file for '$projectName'." "Red"
-    }
-}
-
-# Rename the project file
-function Rename-PathFile($projectName, $newProjectName) {
-    $pathFilePath = Join-Path $ProjectsDir "$projectName.txt"
-    if (Test-Path -Path $pathFilePath -PathType Leaf) {
-        $newPathFilePath = Join-Path $ProjectsDir "$newProjectName.txt"
-        Rename-Item -Path $pathFilePath -NewName $newPathFilePath -Force
-        Write-ColorText "Racoon set the name for '$projectName' to '$newProjectName'." "Green"
-    } else {
-        Write-ColorText "Raccon didnt found the project file for '$projectName'." "Red"
-    }
-}
+# Functions
+. .\scripts\createPathFile.ps1
+. .\scripts\deletePathFiles.ps1
+. .\scripts\renamePathFile.ps1
+. .\scripts\setupProject.ps1
 
 # Check for all flags
 
 # Check if the -help flag is used
 if ($ProjectName -eq "--help") {
-    # List all available projects
-    $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
-    
+      
     Write-ColorText "Usage: rr [project name] --[flag]" "DarkGray"
     Write-Host "The avalable options to command your RouteRaccon:"
     Write-ColorText "  --help       Display this help message" "DarkGray"
@@ -78,7 +38,7 @@ if ($ProjectName -eq "--open") {
     exit 0
 }
 
-# Check if the -open flag is used
+# Check if the --list flag is used
 if ($ProjectName -eq "--list") {
     $ProjectsList = Get-ChildItem -Path $ProjectsDir -Filter *.txt | ForEach-Object { $_.BaseName }
 
@@ -125,10 +85,7 @@ if ($ProjectName -eq "--delete") {
 
 # Check if the --setup flag is used
 if($ProjectName -eq "--setup") {
-    if (-not (Test-Path $ProjectsDir)) {
-        New-Item -ItemType Directory -Path $ProjectsDir | Out-Null
-        Write-Host "Racoon crafted the projects folder at '$ProjectsDir'." -ForegroundColor Green
-    }
+    Create-ProjectsDir
     exit 0
 }
 
@@ -147,6 +104,8 @@ if ($ProjectName -eq "--rename") {
     exit 0
 }
 
+# Logic to navigate
+
 # Check if the projects folder exists
 if (-not (Test-Path $ProjectsDir)) {
     Write-ColorText "Racoon didnt found the projects folder." "Red"
@@ -159,8 +118,6 @@ if ([string]::IsNullOrEmpty($ProjectName)) {
     Write-ColorText "You have to say the projects name to RouteRacoon" "Red"
     exit 1
 }
-
-# Logic to navigate
 
 # Construct the project file path
 $ProjectFilePath = Join-Path $ProjectsDir "$ProjectName.txt"
